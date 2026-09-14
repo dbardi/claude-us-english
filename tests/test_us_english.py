@@ -65,7 +65,8 @@ class UsWordsThatLookBritishAreLeftAlone(unittest.TestCase):
         for word in ["organism", "analysis", "specialist", "cancellation", "emphasis",
                      "realism", "greyhound", "dialogue", "otherwise", "promise",
                      "exercise", "advertise", "modeler", "hypothesis", "metastasis",
-                     "theory", "crystal", "funnel", "analogue", "backwards"]:
+                     "theory", "crystal", "funnel", "analogue", "backwards",
+                     "prev", "prise", "saki", "manilla"]:
             with self.subTest(word=word):
                 self.assertEqual(word, us_english.americanize(word))
 
