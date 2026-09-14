@@ -92,6 +92,40 @@ class OnlySafePairsAreKept(unittest.TestCase):
                        "35 [12dicts]: A: matte <aj>\n"
                        "35 [12dicts]: B: matt <aj>\n"))
 
+    def test_a_form_ranked_above_the_spell_checking_size_is_left_out(self):
+        self.assertEqual(
+            {},
+            pairs_from("70 [3of6]: A Cv: gray <n>\n"
+                       "70 [3of6]: AV B C: grey <n>\n"))
+
+    def test_a_form_ranked_at_the_spell_checking_size_is_kept(self):
+        self.assertEqual(
+            {"grey": "gray"},
+            pairs_from("60 [brif] 70 [3of6]: A Cv: gray <n>\n"
+                       "60 [brif] 70 [3of6]: AV B C: grey <n>\n"))
+
+    def test_a_form_found_only_on_lines_marked_fixme_is_left_out(self):
+        self.assertEqual(
+            {},
+            pairs_from("60 [brif]: A: perv <n>: pervs\n"
+                       "60 [brif]: B: prev <n> # fixme: lemma_rank originally \"-\"\n"))
+
+    def test_a_form_also_found_on_a_line_without_fixme_is_kept(self):
+        self.assertEqual(
+            {"centre": "center"},
+            pairs_from("35 [12dicts]: A: center <v>\n"
+                       "35 [12dicts]: B: centre <v> # fixme: check the verb\n"
+                       "\n"
+                       "35 [12dicts]: A: center <n>\n"
+                       "35 [12dicts]: B: centre <n>\n"))
+
+    def test_forms_left_out_after_review_are_never_paired(self):
+        for british, american in [("prise", "prize"), ("saki", "sake"), ("manilla", "manila")]:
+            with self.subTest(british=british):
+                self.assertEqual(
+                    {},
+                    pairs_from(f"35 [12dicts]: A: {american} <n>\n35 [12dicts]: B: {british} <n>\n"))
+
     def test_open_compounds_possessives_and_placeholders_are_left_out(self):
         self.assertEqual(
             {},
