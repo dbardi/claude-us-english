@@ -41,7 +41,7 @@ def british_to_us(lines):
     for group in lines_by_group:
         for british, american in pairs(group):
             candidates[british].add(american)
-    return {british: americans.pop() for british, americans in candidates.items()
+    return {british: next(iter(americans)) for british, americans in candidates.items()
             if len(americans) == 1 and british not in accepted_in_us}
 
 
