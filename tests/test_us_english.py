@@ -37,7 +37,11 @@ class BritishWordsBecomeUsWords(unittest.TestCase):
                 ("programme", "program"), ("artefact", "artifact"), ("fulfil", "fulfill"),
                 ("fulfilment", "fulfillment"), ("skilful", "skillful"),
                 ("centrepiece", "centerpiece"), ("centrepieces", "centerpieces"),
-                ("one-offs", "one-time pieces")]:
+                ("one-offs", "one-time pieces"),
+                ("hypothesise", "hypothesize"), ("theorise", "theorize"),
+                ("periodisation", "periodization"), ("parallelise", "parallelize"),
+                ("metastasising", "metastasizing"), ("crystallise", "crystallize"),
+                ("funnelling", "funneling")]:
             with self.subTest(british=british):
                 self.assertEqual(us, us_english.americanize(british))
 
@@ -58,7 +62,8 @@ class UsWordsThatLookBritishAreLeftAlone(unittest.TestCase):
     def test_us_words_sharing_a_british_stem(self):
         for word in ["organism", "analysis", "specialist", "cancellation", "emphasis",
                      "realism", "greyhound", "dialogue", "otherwise", "promise",
-                     "exercise", "advertise", "modeler"]:
+                     "exercise", "advertise", "modeler", "hypothesis", "metastasis",
+                     "theory", "crystal", "funnel"]:
             with self.subTest(word=word):
                 self.assertEqual(word, us_english.americanize(word))
 
