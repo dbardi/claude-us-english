@@ -37,7 +37,7 @@ VOCABULARY = {
     "encyclopaedia": "encyclopedia", "fortnightly": "biweekly",
     "hypercalcaemia": "hypercalcemia", "one-off": "one-time", "one-offs": "one-time pieces",
     "parallelise": "parallelize", "periodisation": "periodization",
-    "postcode": "postal code", "postcodes": "postal codes", "spelt": "spelled",
+    "postcode": "postal code", "postcodes": "postal codes",
     "towards": "toward", "tyres": "tires", "whilst": "while",
 }
 
