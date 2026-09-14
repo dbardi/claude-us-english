@@ -75,6 +75,36 @@ class UsWordsThatLookBritishAreLeftAlone(unittest.TestCase):
         self.assertEqual(once, us_english.americanize(once))
 
 
+class BritishPhrasingBecomesUsPhrasing(unittest.TestCase):
+    """Phrases with a single US form are rewritten, like spelling."""
+
+    def test_each_british_phrase_becomes_its_us_phrase(self):
+        for british, us in [
+                ("It is different to that.", "It is different from that."),
+                ("We ship at the weekend.", "We ship on the weekend."),
+                ("It runs at weekends.", "It runs on weekends."),
+                ("Open Monday to Friday.", "Open Monday through Friday."),
+                ("We will fix it in future.", "We will fix it in the future."),
+                ("In future, ask first.", "In the future, ask first."),
+                ("Do it straight away.", "Do it right away."),
+                ("Do it straightaway.", "Do it right away."),
+                ("You have got to test it.", "You have to test it."),
+                ("She has got to test it.", "She has to test it."),
+                ("Take a decision.", "Make a decision."),
+                ("They took a decision.", "They made a decision."),
+                ("Taking a decision is hard.", "Making a decision is hard."),
+                ("He is in hospital.", "He is in the hospital.")]:
+            with self.subTest(british=british):
+                self.assertEqual(us, us_english.americanize(british))
+
+    def test_us_sentences_with_similar_words_are_left_alone(self):
+        for sentence in ["It helps in future passes.", "A different topic.",
+                         "The first Monday to arrive.", "You have got a copy.",
+                         "Give it a try."]:
+            with self.subTest(sentence=sentence):
+                self.assertEqual(sentence, us_english.americanize(sentence))
+
+
 class SpellingsComeFromTheDataFile(unittest.TestCase):
     """British-to-US spellings are read from the file beside the script."""
 
