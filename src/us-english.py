@@ -25,12 +25,13 @@ LOADED = {"skills", "agents", "commands"}
 # Verbs spelled -ise, -yse: the stem, then one of these endings, is required,
 # so "emphasis", "analysis" and "specialist" never match.
 ISE_STEMS = (
-    "apologis authoris capitalis categoris centralis criticis customis "
-    "deserialis emphasis finalis formalis generalis globalis harmonis "
-    "initialis legalis localis materialis maximis memoris minimis modernis "
-    "normalis optimis organis parametris personalis prioritis randomis realis "
-    "recognis sanitis serialis specialis stabilis standardis summaris "
-    "synchronis tokenis utilis visualis analys catalys paralys").split()
+    "apologis authoris capitalis categoris centralis criticis crystallis "
+    "customis deserialis emphasis finalis formalis generalis globalis "
+    "harmonis hypothesis initialis legalis localis materialis maximis memoris "
+    "metastasis minimis modernis normalis optimis organis parallelis "
+    "parametris periodis personalis prioritis randomis realis recognis "
+    "sanitis serialis specialis stabilis standardis summaris synchronis "
+    "theoris tokenis utilis visualis analys catalys paralys").split()
 ISE_ENDINGS = "e|ed|es|ing|er|ers|ation|ations"
 
 # Nouns spelled -our. "Glamour" is US English too, so it is not here.
@@ -42,8 +43,8 @@ OUR_ENDINGS = "|s|ed|ing|al|ally|ful|able|ably|ite|ites|hood|hoods|er|ers|less|i
 
 # US English does not double the final l of these before an ending.
 DOUBLED_L = (
-    "cancel channel counsel dial equal fuel jewel label level marvel model "
-    "pencil quarrel revel rival signal spiral total travel tunnel").split()
+    "cancel channel counsel dial equal fuel funnel jewel label level marvel "
+    "model pencil quarrel revel rival signal spiral total travel tunnel").split()
 DOUBLED_L_ENDINGS = "ed|ing|er|ers|or|ors|ous"
 
 WORDS = {
