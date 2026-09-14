@@ -58,6 +58,13 @@ class PairsComeFromAmericanAndBritishLines(unittest.TestCase):
                        "35 [12dicts]: A Bv C: judgment <n>\n"))
 
 
+    def test_a_marker_before_the_word_is_not_part_of_it(self):
+        self.assertEqual(
+            {"anonymise": "anonymize"},
+            pairs_from("35 [12dicts]: A Z: !anonymize <v>\n"
+                       "35 [12dicts]: B: !anonymise <v>\n"))
+
+
 class OnlySafePairsAreKept(unittest.TestCase):
 
     def test_a_british_form_that_american_english_prefers_elsewhere_is_left_out(self):
@@ -67,6 +74,14 @@ class OnlySafePairsAreKept(unittest.TestCase):
                        "\n"
                        "35 [12dicts]: A: analog <aj>\n"
                        "35 [12dicts]: B: analogue <aj>\n"))
+
+    def test_a_capitalized_name_does_not_stop_its_common_word_converting(self):
+        self.assertEqual(
+            {"grey": "gray"},
+            pairs_from("85 [ukacd]: Grey <n/upper>\n"
+                       "\n"
+                       "35 [12dicts]: A Cv: gray <n>\n"
+                       "35 [12dicts]: AV B C: grey <n>\n"))
 
     def test_a_british_form_with_more_than_one_us_form_is_left_out(self):
         self.assertEqual(
