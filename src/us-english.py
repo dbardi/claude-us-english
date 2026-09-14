@@ -18,6 +18,13 @@ are common enough for spell checking, so a word is converted only when it is
 British wherever it appears. British words the data does not carry, such as
 whilst, one-off and a few rarer spellings, are listed here, and so are British
 phrases with a single US form, such as "different to" and "at the weekend."
+
+Phrases whose US form depends on the sentence ("have a go," "car park") are never
+changed. They come from us-english-british-phrases.txt beside this script and a
+short list here. A run says how many it found, and --review lists each with its
+file and line:
+
+    python ~/.claude/us-english.py --review [root ...]
 """
 import pathlib
 import re
@@ -27,6 +34,8 @@ CLAUDE = pathlib.Path(__file__).resolve().parent
 DEFAULT_ROOTS = (CLAUDE / "plugins" / "cache", CLAUDE / "skills")
 LOADED = {"skills", "agents", "commands"}
 SPELLINGS_FILE = CLAUDE / "us-english-spellings.tsv"
+BRITISH_PHRASES_FILE = CLAUDE / "us-english-british-phrases.txt"
+REVIEW = "--review"
 
 # A word, or words joined by hyphens, so one-off is looked up whole.
 WORD = re.compile(r"[A-Za-z]+(?:-[A-Za-z]+)*")
@@ -60,10 +69,23 @@ PHRASES = [
 PHRASE_RULES = [(re.compile(rf"\b(?:{pattern})\b", re.IGNORECASE), us_phrase) for pattern, us_phrase in PHRASES]
 
 
+# Phrases whose US form depends on the sentence, so a person rewrites them.
+AMBIGUOUS = [
+    "have a go", "fortnights?", "full stop", "(?:was|were) (?:sat|stood)", "at university",
+    "needs (?:doing|fixing|changing|updating|writing)", "on holiday",
+    "chase (?:it |them |this |that )?up", "sense-check", "rubbish", "reckons?", "fancy a",
+]
+
+
 def spellings_from(path):
     """{british: american} from a file of tab-separated pairs that follow # comments."""
     lines = path.read_text(encoding="utf-8").splitlines()
     return dict(line.split("\t") for line in lines if line and not line.startswith("#"))
+
+
+def phrases_from(path):
+    """The phrases in a file of one phrase per line that follow # comments."""
+    return [line for line in path.read_text(encoding="utf-8").splitlines() if line and not line.startswith("#")]
 
 
 SPELLINGS = {**spellings_from(SPELLINGS_FILE), **VOCABULARY}
@@ -104,6 +126,23 @@ def americanized(word):
     return word
 
 
+def flag_pattern(phrases):
+    """One pattern for the ambiguous phrases and the listed ones. The listed ones
+    are matched in their US spelling, because a file is converted before it is
+    reviewed, and longest first, so a whole phrase wins over a part of it."""
+    listed = sorted({americanize(phrase) for phrase in phrases}, key=len, reverse=True)
+    alternatives = [re.escape(phrase) for phrase in listed] + AMBIGUOUS
+    return re.compile(rf"\b(?:{'|'.join(alternatives)})\b", re.IGNORECASE)
+
+
+FLAGGED = flag_pattern(phrases_from(BRITISH_PHRASES_FILE))
+
+
+def flagged(text):
+    """The British phrases in text whose US form depends on the sentence."""
+    return [match.group(0) for match in FLAGGED.finditer(text)]
+
+
 def is_loaded_by_claude(root, path):
     parts = (root.name, *path.relative_to(root).parts)
     return (bool(LOADED.intersection(parts))
@@ -111,16 +150,21 @@ def is_loaded_by_claude(root, path):
             and not any(part.endswith("-workspace") for part in parts))
 
 
-def patch(root):
-    """Rewrite the skill text under root in US English, and name each file changed."""
-    changed = []
+def readable_markdown(root):
+    """(path, text) for each Markdown file under root that Claude loads."""
     for path in sorted(root.rglob("*.md")):
         if not is_loaded_by_claude(root, path):
             continue
         try:
-            original = path.read_text(encoding="utf-8")
+            yield path, path.read_text(encoding="utf-8")
         except (UnicodeDecodeError, OSError):
             continue
+
+
+def patch(root):
+    """Rewrite the skill text under root in US English, and name each file changed."""
+    changed = []
+    for path, original in readable_markdown(root):
         converted = americanize(original)
         if converted != original:
             path.write_text(converted, encoding="utf-8")
@@ -128,11 +172,41 @@ def patch(root):
     return changed
 
 
-def main(argv=()):
-    roots = [pathlib.Path(arg) for arg in argv] or [root for root in DEFAULT_ROOTS if root.is_dir()]
+def review(root):
+    """(path, line number, phrase) for each British phrase under root that a person should rewrite."""
+    return [(path, number, phrase)
+            for path, text in readable_markdown(root)
+            for number, line in enumerate(text.splitlines(), start=1)
+            for phrase in flagged(line)]
+
+
+def roots_from(args):
+    return [pathlib.Path(arg) for arg in args] or [root for root in DEFAULT_ROOTS if root.is_dir()]
+
+
+def convert(roots):
+    """Convert the skill text, and say so only when a file changed or phrasing needs a person."""
     changed = [path for root in roots for path in patch(root)]
     if changed:
         print(f"us-english: converted British spelling to US English in {len(changed)} skill files")
+    flags = [flag for root in roots for flag in review(root)]
+    if flags:
+        print(f"us-english: {len(flags)} British phrasings in skill text need rewriting; "
+              f"list them with: python3 {pathlib.Path(__file__).resolve()} {REVIEW}")
+
+
+def list_phrasing(roots):
+    for root in roots:
+        for path, number, phrase in review(root):
+            print(f"{path}:{number}: {phrase}")
+
+
+def main(argv=()):
+    args = list(argv)
+    if args[:1] == [REVIEW]:
+        list_phrasing(roots_from(args[1:]))
+    else:
+        convert(roots_from(args))
 
 
 if __name__ == "__main__":
