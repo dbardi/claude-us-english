@@ -105,6 +105,50 @@ class BritishPhrasingBecomesUsPhrasing(unittest.TestCase):
                 self.assertEqual(sentence, us_english.americanize(sentence))
 
 
+class PhrasingThatNeedsAPersonIsFlagged(unittest.TestCase):
+    """Phrases whose US form depends on the sentence are reported, never rewritten."""
+
+    def test_each_ambiguous_british_phrase_is_flagged(self):
+        for text, phrase in [
+                ("Have a go at it.", "Have a go"), ("Back in a fortnight.", "fortnight"),
+                ("It comes to a full stop.", "full stop"), ("The file was sat there.", "was sat"),
+                ("She was stood outside.", "was stood"), ("He is at university.", "at university"),
+                ("This needs fixing.", "needs fixing"), ("They are on holiday.", "on holiday"),
+                ("Chase it up tomorrow.", "Chase it up"), ("Sense-check the plan.", "Sense-check"),
+                ("That is rubbish.", "rubbish"), ("I reckon so.", "reckon"),
+                ("Fancy a coffee?", "Fancy a")]:
+            with self.subTest(text=text):
+                self.assertEqual([phrase], us_english.flagged(text))
+
+    def test_a_phrase_from_the_word_list_is_flagged(self):
+        for text, phrase in [("Stop at the zebra crossing.", "zebra crossing"),
+                             ("Meet in the car park.", "car park"),
+                             ("Call my mobile phone.", "mobile phone")]:
+            with self.subTest(text=text):
+                self.assertEqual([phrase], us_english.flagged(text))
+
+    def test_a_phrase_is_matched_in_its_us_spelling(self):
+        self.assertEqual(["driving license"], us_english.flagged("Renew your driving license."))
+
+    def test_us_text_is_not_flagged(self):
+        self.assertEqual([], us_english.flagged("Give it a try; it needs to be fixed in two weeks."))
+
+
+class PhrasesComeFromTheirDataFile(unittest.TestCase):
+    """Phrases to flag are read from the file beside the script."""
+
+    def test_the_notice_is_skipped_and_the_phrases_are_read(self):
+        path = pathlib.Path(tempfile.mkdtemp()) / "phrases.txt"
+        path.write_text("# British phrases to flag.\n#\n# License notice.\ncar park\nzebra crossing\n",
+                        encoding="utf-8")
+
+        self.assertEqual(["car park", "zebra crossing"], us_english.phrases_from(path))
+
+    def test_the_installed_phrase_file_is_the_one_beside_the_script(self):
+        self.assertEqual("us-english-british-phrases.txt", us_english.BRITISH_PHRASES_FILE.name)
+        self.assertEqual(us_english.BRITISH_PHRASES_FILE.parent, pathlib.Path(us_english.__file__).resolve().parent)
+
+
 class SpellingsComeFromTheDataFile(unittest.TestCase):
     """British-to-US spellings are read from the file beside the script."""
 
@@ -153,6 +197,12 @@ class OnlyTheTextClaudeLoadsIsRewritten(unittest.TestCase):
             with self.subTest(path=path.relative_to(self.root)):
                 self.assertEqual("Its behaviour.", path.read_text(encoding="utf-8"))
 
+    def test_review_looks_only_at_the_text_claude_loads(self):
+        loaded = self.write("plugin/skills/a/SKILL.md", "Have a go.")
+        self.write("plugin/CHANGELOG.md", "Have a go.")
+
+        self.assertEqual([(loaded, 1, "Have a go")], us_english.review(self.root))
+
     def test_patch_names_the_files_it_changed(self):
         changed = self.write("plugin/skills/a/SKILL.md", "Its behaviour.")
         self.write("plugin/skills/b/SKILL.md", "Its behavior.")
@@ -183,6 +233,31 @@ class TheHookProtocol(unittest.TestCase):
         (root / "skills" / "a" / "SKILL.md").write_text("Its behaviour.", encoding="utf-8")
 
         self.assertEqual(1, len(self.run_main(root).strip().splitlines()))
+
+    def skill_saying(self, text):
+        root = pathlib.Path(tempfile.mkdtemp())
+        skill = root / "skills" / "a" / "SKILL.md"
+        skill.parent.mkdir(parents=True)
+        skill.write_text(text, encoding="utf-8")
+        return root, skill
+
+    def test_phrasing_to_review_is_summarized_in_one_line(self):
+        root, _ = self.skill_saying("Have a go at it.")
+
+        output = self.run_main(root)
+
+        self.assertEqual(1, len(output.strip().splitlines()))
+        self.assertIn("--review", output)
+
+    def test_review_lists_each_phrase_with_its_file_and_line_and_changes_nothing(self):
+        root, skill = self.skill_saying("Its behaviour.\nHave a go at it.")
+
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            us_english.main(["--review", str(root)])
+
+        self.assertEqual(f"{skill}:2: Have a go", output.getvalue().strip())
+        self.assertEqual("Its behaviour.\nHave a go at it.", skill.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":
