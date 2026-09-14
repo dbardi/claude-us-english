@@ -71,7 +71,7 @@ python3 ~/.claude/us-english.py path/to/skills
 
 ## How it converts
 
-Each word is looked up in `us-english-spellings.tsv`, about 8,500 British
+Each word is looked up in `us-english-spellings.tsv`, about 2,500 British
 spellings with their US forms, taken from the
 [English Speller Database](https://github.com/en-wl/wordlist), the word list
 behind the aspell and hunspell English dictionaries and the successor to
@@ -83,18 +83,19 @@ VarCon:
 | organise, organisation, analyse | organize, organization, analyze |
 | labelled, cancelled, channelled | labeled, canceled, channeled |
 | judgement, catalogue, grey, programme | judgment, catalog, gray, program |
-| ploughed, cognisance, hypercalcaemia | plowed, cognizance, hypercalcemia |
+| ploughed, cognisance, skilful | plowed, cognizance, skillful |
 
-A British form is in the data only when it has exactly one US form and American
-English does not accept it for any sense of any word. So "analogue",
-"backwards" and "practised", which US English accepts, are left as they are, and
-so are US words that only look British, such as organism, analysis and
-specialist.
+A British form is in the data only when converting it is safe wherever it
+appears. So "analogue", "backwards" and "practised", which US English accepts,
+are left as they are, and so are US words that only look British, such as
+organism, analysis and specialist. See [Spelling data](#spelling-data) for how
+the data is chosen.
 
-A few British words are vocabulary rather than spelling variants, so the
-database does not list them. The script converts these itself: afterwards,
-bespoke, dreamt, encyclopaedia, fortnightly, one-off, postcode, spelt, towards,
-tyres and whilst.
+A few British words are not in the data: some are vocabulary rather than
+spelling variants, and some are rarer spellings the data leaves out. The script
+converts these itself: afterwards, bespoke, dreamt, encyclopaedia, fortnightly,
+hypercalcaemia, one-off, parallelise, periodisation, postcode, towards, tyres
+and whilst.
 
 A capitalized word stays capitalized, including each part of a hyphenated one:
 One-Off becomes One-Time. Converting is idempotent, so running it every session
@@ -129,10 +130,18 @@ python3 tools/build-spellings.py scowl-pre.txt src/us-english-spellings.tsv "en-
 
 The database marks, for each sense of a word, the spelling American English
 prefers and the one British English prefers. The build pairs them up, including
-forms written as alternatives, and keeps a British form only when it has one US
-form and never appears as a spelling American English accepts. A capitalized
-name does not count against its common word, so the surname Grey does not stop
-grey becoming gray.
+forms written as alternatives, and keeps a British form only when:
+
+- it has exactly one US form
+- American English does not accept it for any sense of any word; a capitalized
+  name does not count, so the surname Grey does not stop grey becoming gray
+- it is ranked at size 60 or below, the size the database's author recommends
+  for spell checking, on a scale from 35 for the most common words to 85; rarer
+  entries include obscure and doubtful pairs
+- it appears on at least one line the author has not marked `fixme`
+- it is not prise, saki or manilla, which read wrongly once converted: "prise
+  open" would become "prize open," the saki monkey would become sake, and
+  Manilla, a town, would become Manila
 
 The data carries the database's copyright notice, which it asks to appear in
 supporting documentation too:
@@ -158,8 +167,8 @@ No dependencies beyond the standard library.
 | Area | Covers |
 | --- | --- |
 | Conversion | British forms from the data and the vocabulary list, case, hyphenated words, words in a sentence |
-| Look-alikes | US words that share a British stem, and words US English accepts, are left alone; converting twice changes nothing more |
+| Look-alikes | US words that share a British stem, words US English accepts, and forms left out of the data stay as they are; converting twice changes nothing more |
 | Spelling data | reading the data file, and that it sits beside the script |
-| Building the data | pairing American and British lines and alternatives, keeping groups apart, and leaving out forms US English accepts, forms with several US forms, compounds, possessives and capitalized names; the notice comes first |
+| Building the data | pairing American and British lines and alternatives, keeping groups apart, and leaving out forms US English accepts, forms with several US forms, compounds, possessives, capitalized names, forms ranked above the spell-checking size, forms found only on `fixme` lines, and forms left out after review; the notice comes first |
 | Scope | skill, agent and command Markdown is rewritten; other files are not |
 | Hook protocol | silent when nothing changed, one line when something did |
