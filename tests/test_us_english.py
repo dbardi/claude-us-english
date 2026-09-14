@@ -12,7 +12,7 @@ import unittest
 
 from loader import load
 
-us_english = load("us-english.py")
+us_english = load("src/us-english.py")
 
 
 class BritishWordsBecomeUsWords(unittest.TestCase):
