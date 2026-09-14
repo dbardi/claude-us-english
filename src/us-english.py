@@ -16,7 +16,8 @@ English Speller Database by tools/build-spellings.py. It holds only British
 forms that have one US form, that American English does not accept, and that
 are common enough for spell checking, so a word is converted only when it is
 British wherever it appears. British words the data does not carry, such as
-whilst, one-off and a few rarer spellings, are listed here.
+whilst, one-off and a few rarer spellings, are listed here, and so are British
+phrases with a single US form, such as "different to" and "at the weekend."
 """
 import pathlib
 import re
@@ -40,6 +41,23 @@ VOCABULARY = {
     "postcode": "postal code", "postcodes": "postal codes",
     "towards": "toward", "tyres": "tires", "whilst": "while",
 }
+
+
+WEEKDAYS = "monday|tuesday|wednesday|thursday|friday|saturday|sunday"
+MAKE = {"take": "make", "takes": "makes", "took": "made", "taking": "making", "taken": "made"}
+
+# British phrases with a single US form: (pattern, the US phrase for a match).
+PHRASES = [
+    ("different to", lambda match: "different from"),
+    ("at (?:the )?weekends?", lambda match: "on " + match.group(0)[3:]),
+    (f"({WEEKDAYS}) to ({WEEKDAYS})", lambda match: f"{match.group(1)} through {match.group(2)}"),
+    ("in future(?=[,.;:!?])", lambda match: match.group(0)[:3] + "the " + match.group(0)[3:]),
+    ("straight ?away", lambda match: "right away"),
+    ("(have|has) got to", lambda match: f"{match.group(1)} to"),
+    (f"({'|'.join(MAKE)}) a decision", lambda match: MAKE[match.group(1).lower()] + " a decision"),
+    ("in hospital", lambda match: "in the hospital"),
+]
+PHRASE_RULES = [(re.compile(rf"\b(?:{pattern})\b", re.IGNORECASE), us_phrase) for pattern, us_phrase in PHRASES]
 
 
 def spellings_from(path):
@@ -69,8 +87,11 @@ def capitalized_like(original, replacement):
 
 
 def americanize(text):
-    """The text with its British spellings and vocabulary replaced by US ones."""
-    return WORD.sub(lambda match: americanized(match.group(0)), text)
+    """The text with its British spellings, vocabulary and phrases replaced by US ones."""
+    text = WORD.sub(lambda match: americanized(match.group(0)), text)
+    for pattern, us_phrase in PHRASE_RULES:
+        text = pattern.sub(lambda match: matching_case(match.group(0), us_phrase(match)), text)
+    return text
 
 
 def americanized(word):

@@ -1,0 +1,235 @@
+# British phrases to flag, from hyperreality's British-only word list: hyperreality/American-British-English-Translator data/british_only.json at 3ec2a6b.
+#
+# (The MIT License)
+#
+# Copyright (c) 2016
+#
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# 'Software'), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+action man
+agony aunt
+agony column
+agony uncle
+all change
+approved school
+arse over tit
+auntie beeb
+belisha beacon
+big girl's blouse
+bits and bobs
+black pudding
+blues and twos
+bob's your uncle
+bog roll
+boiled sweet
+brass monkeys
+brown bread
+browned off
+bubble and squeak
+bugger all
+building society
+bum bag
+bureau de change
+call minder
+candy floss
+car boot
+car hire
+car park
+caravan park
+cash machine
+cats eye
+central heating boiler
+central reservation
+chartered accountant
+chat up
+chesterfield sofa
+chimney pot
+chinagraph pencil
+chip shop
+clapped out
+codd's wallop
+communication cord
+community payback
+compulsory purchase
+cool box
+cop off with
+cor blimey
+cornish pasty
+cotton bud
+cotton wool
+council estate
+council house
+crack on
+cuddly toy
+donkey's years
+door furniture
+double first
+drawing pin
+dress circle
+driving licence
+dual carriageway
+dustbin man
+electric fire
+engaged tone
+estate agent
+estate car
+extension lead
+fag end
+fairy cake
+fairy lights
+fire brigade
+fish fingers
+fizzy drink
+flight lieutenant
+french letter
+g clamp
+get off with
+glandular fever
+go pear-shaped
+gor blimey
+gordon bennett
+green fingers
+group captain
+guard's van
+hand brake
+hash sign
+heath robinson
+high street
+hire purchase
+hot up
+ice lolly
+icing sugar
+identity parade
+industrial action
+inverted commas
+jacket potato
+jam sandwich
+john thomas
+jumble sale
+jump leads
+karno's army
+kirby grip
+kitchen roll
+knacker's yard
+letter box
+life assurance
+lollipop lady
+lower ground
+managing director
+mentioned in despatches
+mexican wave
+mobile phone
+mole grips
+mouthing off
+move house
+naff off
+nail varnish
+national insurance
+nissen hut
+nosey parker
+nosy parker
+number plate
+old bill
+on the back foot
+on the piss
+other ranks
+package holiday
+page three
+paki shop
+panda car
+paper round
+pelican crossing
+people carrier
+people mover
+phone box
+pillar box
+pillar-box red
+pissing it down
+ponce about
+ponce around
+ponce off
+post box
+postage and packing
+postal order
+poste restante
+pound shop
+provisional driving licence
+provisional licence
+quids in
+recorded delivery
+red top
+reel of cotton
+register office
+registry office
+release on licence
+retail park
+reverse charge call
+rumpy pumpy
+sandwich cake
+sat nav
+self-raising flour
+selling-out shop
+send to coventry
+shanks's pony
+shopping trolley
+sixes and sevens
+skirting board
+slag off
+sleeping partner
+sleeping policeman
+slip road
+smart dress
+soap dodger
+sod off
+spot on
+spotted dick
+squadron leader
+sticky wicket
+sticky-backed plastic
+stone the crows
+suck it and see
+sun cream
+suspender belt
+sweet fa
+swimming costume
+take the piss
+tapping up
+tea towel
+telephone kiosk
+the beeb
+the dog's bollocks
+throw a wobbly
+tipping down
+tits up
+toffee apple
+tommy atkins
+trading standards
+transit van
+transport cafe
+turf accountant
+up himself
+up sticks
+wage packet
+washing-up liquid
+what ho
+white coffee
+white pudding
+wide boy
+wing mirrors
+zebra crossing
