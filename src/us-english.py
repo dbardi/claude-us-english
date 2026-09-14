@@ -13,10 +13,10 @@ SessionStart hook's output is added to Claude's context.
 
 Spellings come from us-english-spellings.tsv beside this script, built from the
 English Speller Database by tools/build-spellings.py. It holds only British
-forms that have one US form and that American English does not accept, so a
-word is converted only when it is British wherever it appears. British
-vocabulary that is not a spelling variant, such as whilst and one-off, is
-listed here.
+forms that have one US form, that American English does not accept, and that
+are common enough for spell checking, so a word is converted only when it is
+British wherever it appears. British words the data does not carry, such as
+whilst, one-off and a few rarer spellings, are listed here.
 """
 import pathlib
 import re
@@ -30,11 +30,13 @@ SPELLINGS_FILE = CLAUDE / "us-english-spellings.tsv"
 # A word, or words joined by hyphens, so one-off is looked up whole.
 WORD = re.compile(r"[A-Za-z]+(?:-[A-Za-z]+)*")
 
-# British vocabulary the English Speller Database does not list as a spelling variant.
+# British words the spelling data does not carry: vocabulary that is not a
+# spelling variant, and spellings ranked rarer than its spell-checking size.
 VOCABULARY = {
     "afterwards": "afterward", "bespoke": "custom", "dreamt": "dreamed",
     "encyclopaedia": "encyclopedia", "fortnightly": "biweekly",
-    "one-off": "one-time", "one-offs": "one-time pieces",
+    "hypercalcaemia": "hypercalcemia", "one-off": "one-time", "one-offs": "one-time pieces",
+    "parallelise": "parallelize", "periodisation": "periodization",
     "postcode": "postal code", "postcodes": "postal codes", "spelt": "spelled",
     "towards": "toward", "tyres": "tires", "whilst": "while",
 }
