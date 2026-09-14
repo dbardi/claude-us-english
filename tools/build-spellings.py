@@ -101,7 +101,7 @@ def lemma_word(text):
     word = POS_AND_NOTES.sub("", text).strip()
     if word == "-":
         return word
-    return re.sub(r"^[-@!] ", "", word).rstrip(ANNOTATIONS)
+    return re.sub(r"^(?:[-@!] |[@!])", "", word).rstrip(ANNOTATIONS)
 
 
 def form(entry):
@@ -126,15 +126,16 @@ def is_british(marks):
 
 def us_accepted(group):
     """Every word in the group that American English accepts: on an American
-    line, an American alternative, or a line or alternative with no marks."""
+    line, an American alternative, or a line or alternative with no marks. Case
+    is kept, so a capitalized name does not stand in for its common word."""
     for marks, words in group:
         line_accepted = is_american(marks) or not marks
         for word in words:
             if isinstance(word, list):
-                yield from (text.lower() for alt_marks, text in word
+                yield from (text for alt_marks, text in word
                             if (is_american(alt_marks) or not alt_marks) and line_accepted)
             elif word != "-" and line_accepted:
-                yield word.lower()
+                yield word
 
 
 def pairs(group):
