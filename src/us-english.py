@@ -11,8 +11,12 @@ Markdown under a skills, agents or commands folder is touched: that is what
 Claude loads. It prints nothing unless it changed a file, because a
 SessionStart hook's output is added to Claude's context.
 
-Every rule matches whole words, so US words that share a British stem
-(organism, analysis, specialist, cancellation) are left alone.
+Spellings come from us-english-spellings.tsv beside this script, built from the
+English Speller Database by tools/build-spellings.py. It holds only British
+forms that have one US form, that American English does not accept, and that
+are common enough for spell checking, so a word is converted only when it is
+British wherever it appears. British words the data does not carry, such as
+whilst, one-off and a few rarer spellings, are listed here.
 """
 import pathlib
 import re
@@ -21,65 +25,30 @@ import sys
 CLAUDE = pathlib.Path(__file__).resolve().parent
 DEFAULT_ROOTS = (CLAUDE / "plugins" / "cache", CLAUDE / "skills")
 LOADED = {"skills", "agents", "commands"}
+SPELLINGS_FILE = CLAUDE / "us-english-spellings.tsv"
 
-# Verbs spelled -ise, -yse: the stem, then one of these endings, is required,
-# so "emphasis", "analysis" and "specialist" never match.
-ISE_STEMS = (
-    "apologis authoris capitalis categoris centralis criticis crystallis "
-    "customis deserialis emphasis finalis formalis generalis globalis "
-    "harmonis hypothesis initialis legalis localis materialis maximis memoris "
-    "metastasis minimis modernis normalis optimis organis parallelis "
-    "parametris periodis personalis prioritis randomis realis recognis "
-    "sanitis serialis specialis stabilis standardis summaris synchronis "
-    "theoris tokenis utilis visualis analys catalys paralys").split()
-ISE_ENDINGS = "e|ed|es|ing|er|ers|ation|ations"
+# A word, or words joined by hyphens, so one-off is looked up whole.
+WORD = re.compile(r"[A-Za-z]+(?:-[A-Za-z]+)*")
 
-# Nouns spelled -our. "Glamour" is US English too, so it is not here.
-OUR_WORDS = (
-    "armour behaviour clamour colour endeavour favour flavour harbour honour "
-    "humour labour neighbour odour parlour rigour rumour savour splendour "
-    "tumour vapour vigour").split()
-OUR_ENDINGS = "|s|ed|ing|al|ally|ful|able|ably|ite|ites|hood|hoods|er|ers|less|ist|ists"
-
-# US English does not double the final l of these before an ending.
-DOUBLED_L = (
-    "cancel channel counsel dial equal fuel funnel jewel label level marvel "
-    "model pencil quarrel revel rival signal spiral total travel tunnel").split()
-DOUBLED_L_ENDINGS = "ed|ing|er|ers|or|ors|ous"
-
-WORDS = {
-    "acknowledgement": "acknowledgment", "acknowledgements": "acknowledgments",
-    "aeroplane": "airplane", "aeroplanes": "airplanes",
-    "afterwards": "afterward", "ageing": "aging", "aluminium": "aluminum",
-    "amongst": "among", "analogue": "analog", "analogues": "analogs",
-    "artefact": "artifact", "artefacts": "artifacts", "bespoke": "custom",
-    "calibre": "caliber", "catalogue": "catalog", "catalogues": "catalogs",
-    "catalogued": "cataloged", "cataloguing": "cataloging",
-    "centre": "center", "centres": "centers", "centred": "centered", "centring": "centering",
-    "centrepiece": "centerpiece", "centrepieces": "centerpieces",
-    "cheque": "check", "cheques": "checks", "defence": "defense", "defences": "defenses",
-    "dreamt": "dreamed", "encyclopaedia": "encyclopedia", "enrol": "enroll",
-    "enrols": "enrolls", "enrolment": "enrollment", "fibre": "fiber", "fibres": "fibers",
-    "fortnightly": "biweekly", "fulfil": "fulfill", "fulfils": "fulfills",
-    "fulfilment": "fulfillment", "grey": "gray", "greys": "grays", "greyed": "grayed",
-    "greying": "graying", "greyish": "grayish", "instalment": "installment",
-    "instalments": "installments", "jewellery": "jewelry", "judgement": "judgment",
-    "judgements": "judgments", "learnt": "learned", "licence": "license",
-    "licences": "licenses", "litre": "liter", "litres": "liters",
-    "manoeuvre": "maneuver", "manoeuvres": "maneuvers", "manoeuvred": "maneuvered",
-    "manoeuvring": "maneuvering", "meagre": "meager", "metre": "meter", "metres": "meters",
-    "mould": "mold", "moulds": "molds", "moulded": "molded", "moulding": "molding",
-    "offence": "offense", "offences": "offenses", "one-off": "one-time", "one-offs": "one-time pieces",
-    "paediatric": "pediatric", "postcode": "postal code", "postcodes": "postal codes",
-    "practise": "practice", "practises": "practices", "practised": "practiced",
-    "practising": "practicing", "pretence": "pretense", "programme": "program",
-    "programmes": "programs", "pyjamas": "pajamas", "sceptic": "skeptic",
-    "sceptics": "skeptics", "sceptical": "skeptical", "scepticism": "skepticism",
-    "skilful": "skillful", "sombre": "somber", "spectre": "specter", "spelt": "spelled",
-    "sulphur": "sulfur", "theatre": "theater", "theatres": "theaters",
-    "towards": "toward", "tyre": "tire", "tyres": "tires", "whilst": "while",
-    "wilful": "willful",
+# British words the spelling data does not carry: vocabulary that is not a
+# spelling variant, and spellings ranked rarer than its spell-checking size.
+VOCABULARY = {
+    "afterwards": "afterward", "bespoke": "custom", "dreamt": "dreamed",
+    "encyclopaedia": "encyclopedia", "fortnightly": "biweekly",
+    "hypercalcaemia": "hypercalcemia", "one-off": "one-time", "one-offs": "one-time pieces",
+    "parallelise": "parallelize", "periodisation": "periodization",
+    "postcode": "postal code", "postcodes": "postal codes",
+    "towards": "toward", "tyres": "tires", "whilst": "while",
 }
+
+
+def spellings_from(path):
+    """{british: american} from a file of tab-separated pairs that follow # comments."""
+    lines = path.read_text(encoding="utf-8").splitlines()
+    return dict(line.split("\t") for line in lines if line and not line.startswith("#"))
+
+
+SPELLINGS = {**spellings_from(SPELLINGS_FILE), **VOCABULARY}
 
 
 def matching_case(original, replacement):
@@ -99,30 +68,19 @@ def capitalized_like(original, replacement):
     return replacement
 
 
-def rule(pattern, americanized):
-    """A whole-word rule: each match is replaced by americanized(match), in the original's case."""
-    compiled = re.compile(rf"\b(?:{pattern})\b", re.IGNORECASE)
-    return lambda text: compiled.sub(
-        lambda match: matching_case(match.group(0), americanized(match)), text)
-
-
-RULES = (
-    rule(rf"({'|'.join(ISE_STEMS)})({ISE_ENDINGS})",
-         lambda m: m.group(1).lower()[:-1] + "z" + m.group(2).lower()),
-    rule(rf"({'|'.join(OUR_WORDS)})({OUR_ENDINGS})",
-         lambda m: m.group(1).lower()[:-2] + "r" + m.group(2).lower()),
-    rule(rf"({'|'.join(DOUBLED_L)})l({DOUBLED_L_ENDINGS})",
-         lambda m: m.group(1).lower() + m.group(2).lower()),
-    rule("|".join(re.escape(word) for word in WORDS),
-         lambda m: WORDS[m.group(0).lower()]),
-)
-
-
 def americanize(text):
-    """The text with its British spellings replaced by US ones."""
-    for apply in RULES:
-        text = apply(text)
-    return text
+    """The text with its British spellings and vocabulary replaced by US ones."""
+    return WORD.sub(lambda match: americanized(match.group(0)), text)
+
+
+def americanized(word):
+    """The word in US English: whole when it is listed, otherwise part by part
+    when it is hyphenated, otherwise as it is."""
+    if word.lower() in SPELLINGS:
+        return matching_case(word, SPELLINGS[word.lower()])
+    if "-" in word:
+        return "-".join(americanized(part) for part in word.split("-"))
+    return word
 
 
 def is_loaded_by_claude(root, path):

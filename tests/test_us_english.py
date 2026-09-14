@@ -12,7 +12,7 @@ import unittest
 
 from loader import load
 
-us_english = load("us-english.py")
+us_english = load("src/us-english.py")
 
 
 class BritishWordsBecomeUsWords(unittest.TestCase):
@@ -31,7 +31,7 @@ class BritishWordsBecomeUsWords(unittest.TestCase):
                 ("recognised", "recognized"), ("generalising", "generalizing"),
                 ("optimises", "optimizes"), ("summarise", "summarize"), ("specialised", "specialized"),
                 ("analyse", "analyze"), ("analysed", "analyzed"),
-                ("catalogue", "catalog"), ("analogue", "analog"), ("centre", "center"),
+                ("catalogue", "catalog"), ("centre", "center"),
                 ("licence", "license"), ("defence", "defense"), ("offence", "offense"),
                 ("grey", "gray"), ("ageing", "aging"), ("sceptical", "skeptical"),
                 ("programme", "program"), ("artefact", "artifact"), ("fulfil", "fulfill"),
@@ -41,7 +41,9 @@ class BritishWordsBecomeUsWords(unittest.TestCase):
                 ("hypothesise", "hypothesize"), ("theorise", "theorize"),
                 ("periodisation", "periodization"), ("parallelise", "parallelize"),
                 ("metastasising", "metastasizing"), ("crystallise", "crystallize"),
-                ("funnelling", "funneling")]:
+                ("funnelling", "funneling"),
+                ("ploughed", "plowed"), ("cognisance", "cognizance"),
+                ("hypercalcaemia", "hypercalcemia"), ("channelled", "channeled")]:
             with self.subTest(british=british):
                 self.assertEqual(us, us_english.americanize(british))
 
@@ -63,13 +65,29 @@ class UsWordsThatLookBritishAreLeftAlone(unittest.TestCase):
         for word in ["organism", "analysis", "specialist", "cancellation", "emphasis",
                      "realism", "greyhound", "dialogue", "otherwise", "promise",
                      "exercise", "advertise", "modeler", "hypothesis", "metastasis",
-                     "theory", "crystal", "funnel"]:
+                     "theory", "crystal", "funnel", "analogue", "backwards",
+                     "prev", "prise", "saki", "manilla"]:
             with self.subTest(word=word):
                 self.assertEqual(word, us_english.americanize(word))
 
     def test_converting_twice_changes_nothing_more(self):
         once = us_english.americanize("The colour of the neighbourhood, minimised.")
         self.assertEqual(once, us_english.americanize(once))
+
+
+class SpellingsComeFromTheDataFile(unittest.TestCase):
+    """British-to-US spellings are read from the file beside the script."""
+
+    def test_the_notice_is_skipped_and_the_pairs_are_read(self):
+        path = pathlib.Path(tempfile.mkdtemp()) / "spellings.tsv"
+        path.write_text("# British to US spellings.\n#\n# Copyright notice.\n"
+                        "behaviour\tbehavior\ngrey\tgray\n", encoding="utf-8")
+
+        self.assertEqual({"behaviour": "behavior", "grey": "gray"}, us_english.spellings_from(path))
+
+    def test_the_installed_data_file_is_the_one_beside_the_script(self):
+        self.assertEqual("us-english-spellings.tsv", us_english.SPELLINGS_FILE.name)
+        self.assertEqual(us_english.SPELLINGS_FILE.parent, pathlib.Path(us_english.__file__).resolve().parent)
 
 
 class OnlyTheTextClaudeLoadsIsRewritten(unittest.TestCase):
