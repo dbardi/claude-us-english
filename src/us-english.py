@@ -184,14 +184,21 @@ def roots_from(args):
     return [pathlib.Path(arg) for arg in args] or [root for root in DEFAULT_ROOTS if root.is_dir()]
 
 
+def counted(things, noun):
+    """The number of things with its noun, pluralized when there is not one."""
+    return f"{len(things)} {noun}" if len(things) == 1 else f"{len(things)} {noun}s"
+
+
 def convert(roots):
     """Convert the skill text, and say so only when a file changed or phrasing needs a person."""
     changed = [path for root in roots for path in patch(root)]
     if changed:
-        print(f"us-english: converted British spelling to US English in {len(changed)} skill files")
+        print(f"us-english: converted British spelling to US English "
+              f"in {counted(changed, 'skill file')}")
     flags = [flag for root in roots for flag in review(root)]
     if flags:
-        print(f"us-english: {len(flags)} British phrasings in skill text need rewriting; "
+        print(f"us-english: {counted(flags, 'British phrasing')} in skill text "
+              f"{'needs' if len(flags) == 1 else 'need'} to be rewritten; "
               f"list them with: python3 {pathlib.Path(__file__).resolve()} {REVIEW}")
 
 
