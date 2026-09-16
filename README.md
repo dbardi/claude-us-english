@@ -255,3 +255,13 @@ No dependencies beyond the standard library.
 | Building the phrase data | keeping multi-word phrases, splitting alternatives, dropping notes and punctuation, leaving out phrases common in US text; the notice comes first |
 | Scope | skill, agent and command Markdown is rewritten and reviewed; other files are not |
 | Hook protocol | silent when nothing changed, one line for conversions, one line for phrasing to review, and `--review` listing each phrase by file and line without changing it |
+
+## License
+
+The script, the build tools and the tests are under the MIT License, in
+[LICENSE](LICENSE).
+
+The two data files are derived from other people's word lists and carry their
+own notices, which stay with them wherever they go: the English Speller
+Database notice in [Spelling data](#spelling-data), and the MIT notice of the
+American-British-English-Translator word list in [Phrase data](#phrase-data).
