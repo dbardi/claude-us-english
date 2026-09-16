@@ -141,7 +141,7 @@ those is one line:
 
 ```
 us-english: converted British spelling to US English in 37 skill files
-us-english: 2 British phrasings in skill text need rewriting; list them with: python3 ~/.claude/us-english.py --review
+us-english: 2 British phrasings in skill text need to be rewritten; list them with: python3 ~/.claude/us-english.py --review
 ```
 
 ## Plugin updates
