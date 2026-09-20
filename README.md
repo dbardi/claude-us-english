@@ -242,7 +242,8 @@ carries:
 python3 -m unittest discover -s tests
 ```
 
-No dependencies beyond the standard library.
+No dependencies beyond the standard library. GitHub Actions runs them on every
+push and pull request, on the oldest and the newest Python the script supports.
 
 | Area | Covers |
 | --- | --- |

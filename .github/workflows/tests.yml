@@ -1,0 +1,26 @@
+name: Tests
+
+on:
+  push:
+    branches: [main, develop, "feature/**", "release/**", "hotfix/**"]
+  pull_request:
+
+jobs:
+  test:
+    # The oldest Python the README supports and the newest released one, so a
+    # syntax or standard library change in either direction shows up here.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - python-version: "3.8"
+            runner: ubuntu-22.04
+          - python-version: "3.13"
+            runner: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python -m unittest discover -s tests
