@@ -249,6 +249,29 @@ class TheHookProtocol(unittest.TestCase):
         self.assertEqual(1, len(output.strip().splitlines()))
         self.assertIn("--review", output)
 
+    def test_one_changed_file_is_counted_in_the_singular(self):
+        root, _ = self.skill_saying("Its behaviour.")
+
+        self.assertIn("in 1 skill file\n", self.run_main(root))
+
+    def test_several_changed_files_are_counted_in_the_plural(self):
+        root, first = self.skill_saying("Its behaviour.")
+        second = first.parent.parent / "b" / "SKILL.md"
+        second.parent.mkdir(parents=True)
+        second.write_text("Its colour.", encoding="utf-8")
+
+        self.assertIn("in 2 skill files\n", self.run_main(root))
+
+    def test_one_phrasing_to_review_is_counted_in_the_singular(self):
+        root, _ = self.skill_saying("Have a go at it.")
+
+        self.assertIn("1 British phrasing in skill text needs to be rewritten", self.run_main(root))
+
+    def test_several_phrasings_to_review_are_counted_in_the_plural(self):
+        root, _ = self.skill_saying("Have a go at it.\nThat is rubbish.")
+
+        self.assertIn("2 British phrasings in skill text need to be rewritten", self.run_main(root))
+
     def test_review_lists_each_phrase_with_its_file_and_line_and_changes_nothing(self):
         root, skill = self.skill_saying("Its behaviour.\nHave a go at it.")
 
